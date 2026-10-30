@@ -3,7 +3,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 
 // ==================================
 // SURVIVAL: RED ISLAND
-// VERSION 2 - NOUVEAU PERSONNAGE
+// VERSION 3 - PERSONNAGE AMELIORE
 // ==================================
 
 const scene = new THREE.Scene();
@@ -23,14 +23,14 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 document.body.appendChild(renderer.domElement);
 
-// LUMIÈRE
+// LUMIERES
 scene.add(new THREE.HemisphereLight(0xffffff, 0x426044, 2));
 
 const sunlight = new THREE.DirectionalLight(0xffffff, 2);
 sunlight.position.set(15, 25, 10);
 scene.add(sunlight);
 
-// OCÉAN
+// OCEAN
 const ocean = new THREE.Mesh(
   new THREE.PlaneGeometry(200, 200),
   new THREE.MeshStandardMaterial({ color: 0x087eaa })
@@ -39,7 +39,7 @@ ocean.rotation.x = -Math.PI / 2;
 ocean.position.y = -0.5;
 scene.add(ocean);
 
-// ÎLE
+// ILE
 const islandShape = new THREE.Shape();
 
 for (let i = 0; i <= 64; i++) {
@@ -130,19 +130,22 @@ for (let i = 0; i < 15; i++) {
 }
 
 // ==================================
-// NOUVEAU PERSONNAGE 3D
+// PERSONNAGE
 // ==================================
 
 const player = new THREE.Group();
 scene.add(player);
 
-// MATÉRIAUX
+// MATERIAUX
 const skin = new THREE.MeshStandardMaterial({ color: 0xb97850 });
 const shirt = new THREE.MeshStandardMaterial({ color: 0x455d45 });
 const pants = new THREE.MeshStandardMaterial({ color: 0x343b43 });
 const boots = new THREE.MeshStandardMaterial({ color: 0x29231e });
 const backpackMaterial = new THREE.MeshStandardMaterial({ color: 0x75502e });
 const hair = new THREE.MeshStandardMaterial({ color: 0x211a15 });
+const eyeWhite = new THREE.MeshStandardMaterial({ color: 0xffffff });
+const eyeBlack = new THREE.MeshStandardMaterial({ color: 0x171717 });
+const mouthMaterial = new THREE.MeshStandardMaterial({ color: 0x542c25 });
 
 // TORSE
 const torso = new THREE.Mesh(
@@ -152,27 +155,95 @@ const torso = new THREE.Mesh(
 torso.position.y = 1.75;
 player.add(torso);
 
-// TÊTE
+// COU
+const neck = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.13, 0.15, 0.22, 12),
+  skin
+);
+neck.position.y = 2.25;
+player.add(neck);
+
+// TETE
 const head = new THREE.Mesh(
-  new THREE.SphereGeometry(0.28, 12, 10),
+  new THREE.SphereGeometry(0.28, 20, 16),
   skin
 );
 head.position.y = 2.42;
 player.add(head);
 
+// VISAGE : YEUX ET PUPILLES
+for (const side of [-1, 1]) {
+  const eye = new THREE.Mesh(
+    new THREE.SphereGeometry(0.05, 12, 10),
+    eyeWhite
+  );
+
+  eye.position.set(side * 0.09, 2.46, 0.255);
+  player.add(eye);
+
+  const pupil = new THREE.Mesh(
+    new THREE.SphereGeometry(0.025, 12, 10),
+    eyeBlack
+  );
+
+  pupil.position.set(side * 0.09, 2.46, 0.298);
+  player.add(pupil);
+
+  // SOURCILS
+  const eyebrow = new THREE.Mesh(
+    new THREE.BoxGeometry(0.105, 0.025, 0.035),
+    hair
+  );
+
+  eyebrow.position.set(side * 0.09, 2.535, 0.265);
+  eyebrow.rotation.z = side * -0.08;
+  player.add(eyebrow);
+
+  // OREILLES
+  const ear = new THREE.Mesh(
+    new THREE.SphereGeometry(0.075, 12, 10),
+    skin
+  );
+
+  ear.position.set(side * 0.275, 2.42, 0);
+  player.add(ear);
+}
+
+// NEZ
+const nose = new THREE.Mesh(
+  new THREE.SphereGeometry(0.055, 12, 10),
+  skin
+);
+
+nose.position.set(0, 2.385, 0.305);
+player.add(nose);
+
+// BOUCHE
+const mouth = new THREE.Mesh(
+  new THREE.BoxGeometry(0.12, 0.025, 0.035),
+  mouthMaterial
+);
+
+mouth.position.set(0, 2.30, 0.275);
+player.add(mouth);
+
 // CHEVEUX
 const hairMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(0.29, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.55),
+  new THREE.SphereGeometry(
+    0.29, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.55
+  ),
   hair
 );
+
 hairMesh.position.y = 2.48;
 player.add(hairMesh);
 
-// SAC À DOS
+// SAC A DOS
 const backpack = new THREE.Mesh(
   new THREE.BoxGeometry(0.62, 0.75, 0.3),
   backpackMaterial
 );
+
 backpack.position.set(0, 1.85, -0.36);
 player.add(backpack);
 
@@ -188,7 +259,7 @@ for (const side of [-1, 1]) {
   player.add(strap);
 }
 
-// BRAS ARTICULÉS
+// BRAS
 const arms = [];
 
 for (const side of [-1, 1]) {
@@ -205,7 +276,7 @@ for (const side of [-1, 1]) {
   armPivot.add(arm);
 
   const hand = new THREE.Mesh(
-    new THREE.SphereGeometry(0.13, 8, 8),
+    new THREE.SphereGeometry(0.13, 10, 8),
     skin
   );
 
@@ -215,7 +286,7 @@ for (const side of [-1, 1]) {
   arms.push(armPivot);
 }
 
-// JAMBES ARTICULÉES
+// JAMBES
 const legs = [];
 
 for (const side of [-1, 1]) {
@@ -322,7 +393,7 @@ playButton.addEventListener("click", () => {
   healthFill.style.width = "100%";
 });
 
-// CAMÉRA
+// CAMERA
 camera.position.set(0, 7, 10);
 
 // ANIMATION
@@ -392,7 +463,7 @@ function animate() {
 
 animate();
 
-// ADAPTATION ÉCRAN
+// ADAPTATION ECRAN
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
