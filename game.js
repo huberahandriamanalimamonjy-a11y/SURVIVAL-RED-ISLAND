@@ -1,7 +1,6 @@
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-// SCÈNE
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
 scene.fog = new THREE.Fog(0x87ceeb, 35, 90);
@@ -19,7 +18,6 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 document.body.appendChild(renderer.domElement);
 
-// LUMIÈRE
 scene.add(new THREE.HemisphereLight(0xffffff, 0x426044, 2));
 
 const sunlight = new THREE.DirectionalLight(0xffffff, 2);
@@ -37,12 +35,12 @@ scene.add(ocean);
 
 // ÎLE
 const islandShape = new THREE.Shape();
-const points = 64;
 
-for (let i = 0; i <= points; i++) {
-  const angle = (i / points) * Math.PI * 2;
+for (let i = 0; i <= 64; i++) {
+  const angle = (i / 64) * Math.PI * 2;
   const variation = 1 + 0.08 * Math.sin(angle * 5)
                      + 0.05 * Math.cos(angle * 7);
+
   const x = Math.cos(angle) * 19 * variation;
   const y = Math.sin(angle) * 16 * variation;
 
@@ -59,10 +57,9 @@ const island = new THREE.Mesh(
 );
 
 island.rotation.x = -Math.PI / 2;
-island.position.y = 0;
 scene.add(island);
 
-// SABLE
+// PLAGE
 const beach = new THREE.Mesh(
   new THREE.RingGeometry(17, 19, 64),
   new THREE.MeshStandardMaterial({
@@ -74,7 +71,7 @@ beach.rotation.x = -Math.PI / 2;
 beach.position.y = 0.03;
 scene.add(beach);
 
-// ARBRES TROPICAUX
+// ARBRES
 function createTree(x, z) {
   const tree = new THREE.Group();
 
@@ -82,6 +79,7 @@ function createTree(x, z) {
     new THREE.CylinderGeometry(0.2, 0.3, 2, 7),
     new THREE.MeshStandardMaterial({ color: 0x79502c })
   );
+
   trunk.position.y = 1;
   tree.add(trunk);
 
@@ -89,6 +87,7 @@ function createTree(x, z) {
     new THREE.SphereGeometry(1.3, 7, 6),
     new THREE.MeshStandardMaterial({ color: 0x246b32 })
   );
+
   leaves.position.y = 2.4;
   tree.add(leaves);
 
@@ -99,6 +98,7 @@ function createTree(x, z) {
 for (let i = 0; i < 45; i++) {
   const angle = Math.random() * Math.PI * 2;
   const radius = 6 + Math.random() * 10;
+
   createTree(
     Math.cos(angle) * radius,
     Math.sin(angle) * radius
@@ -128,9 +128,9 @@ const body = new THREE.Mesh(
   new THREE.CapsuleGeometry(0.45, 1, 4, 8),
   new THREE.MeshStandardMaterial({ color: 0x9b3d25 })
 );
+
 body.position.y = 1;
 player.add(body);
-
 scene.add(player);
 
 // COMMANDES
@@ -145,7 +145,7 @@ window.addEventListener("keyup", e => {
   keys[e.key.toLowerCase()] = false;
 });
 
-// BOUTONS TACTILES
+// COMMANDES TACTILES
 const controls = document.createElement("div");
 
 controls.style.cssText = `
@@ -169,6 +169,7 @@ const buttons = [
 buttons.forEach(([symbol, key, row, col]) => {
   const button = document.createElement("button");
   button.textContent = symbol;
+
   button.style.cssText = `
     grid-row:${row};
     grid-column:${col};
@@ -194,18 +195,21 @@ buttons.forEach(([symbol, key, row, col]) => {
 
 document.body.appendChild(controls);
 
-// LANCEMENT
+// INTERFACE DE SURVIE
 const playButton = document.getElementById("playButton");
 const menu = document.getElementById("menu");
-const statusText = document.getElementById("status");
+const survivalUI = document.getElementById("survivalUI");
+const healthFill = document.getElementById("healthFill");
 
 playButton.addEventListener("click", () => {
   gameStarted = true;
   menu.style.display = "none";
   controls.style.display = "grid";
+  survivalUI.style.display = "block";
+  healthFill.style.width = "100%";
 });
 
-// CAMÉRA ET MOUVEMENT
+// CAMÉRA
 camera.position.set(0, 7, 10);
 
 function animate() {
@@ -232,7 +236,6 @@ function animate() {
       player.rotation.y = Math.atan2(dx, dz);
     }
 
-    // Limites de l'île
     const distance = Math.hypot(
       player.position.x,
       player.position.z
@@ -243,7 +246,6 @@ function animate() {
       player.position.z *= 17 / distance;
     }
 
-    // Caméra qui suit le personnage
     const targetCamera = new THREE.Vector3(
       player.position.x,
       player.position.y + 7,
@@ -251,6 +253,7 @@ function animate() {
     );
 
     camera.position.lerp(targetCamera, 0.08);
+
     camera.lookAt(
       player.position.x,
       player.position.y + 1,
@@ -263,10 +266,9 @@ function animate() {
 
 animate();
 
-// ADAPTATION À L'ÉCRAN
+// ADAPTATION ÉCRAN
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
