@@ -3,15 +3,16 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 
 // ==========================================
 // SURVIVAL: RED ISLAND
-// VERSION 4 - XXL OPEN WORLD
+// VERSION 5 - MEGA ISLAND 2000
+// Optimisation mobile
 // ==========================================
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 65, 180);
+scene.fog = new THREE.Fog(0x87ceeb, 900, 3600);
 
 const camera = new THREE.PerspectiveCamera(
-  65, window.innerWidth / window.innerHeight, 0.1, 250
+  65, window.innerWidth / window.innerHeight, 0.1, 5000
 );
 
 const renderer = new THREE.WebGLRenderer({
@@ -20,7 +21,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
 document.body.appendChild(renderer.domElement);
 
 // ==========================================
@@ -30,15 +31,15 @@ document.body.appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x426044, 2));
 
 const sunlight = new THREE.DirectionalLight(0xffffff, 2);
-sunlight.position.set(30, 50, 20);
+sunlight.position.set(300, 500, 200);
 scene.add(sunlight);
 
 // ==========================================
-// OCEAN XXL
+// OCEAN
 // ==========================================
 
 const ocean = new THREE.Mesh(
-  new THREE.PlaneGeometry(300, 300),
+  new THREE.PlaneGeometry(6000, 6000),
   new THREE.MeshStandardMaterial({
     color: 0x087eaa,
     roughness: 0.4
@@ -46,36 +47,37 @@ const ocean = new THREE.Mesh(
 );
 
 ocean.rotation.x = -Math.PI / 2;
-ocean.position.y = -0.5;
+ocean.position.y = -2;
 scene.add(ocean);
 
 // ==========================================
-// ILE XXL
+// ILE : ENVIRON 2000 x 1640
 // ==========================================
 
 const islandShape = new THREE.Shape();
 
-for (let i = 0; i <= 100; i++) {
-  const angle = (i / 100) * Math.PI * 2;
+for (let i = 0; i <= 160; i++) {
+  const angle = (i / 160) * Math.PI * 2;
 
   const variation =
     1 +
-    0.08 * Math.sin(angle * 5) +
-    0.05 * Math.cos(angle * 9) +
-    0.025 * Math.sin(angle * 13);
+    0.045 * Math.sin(angle * 5) +
+    0.025 * Math.cos(angle * 9) +
+    0.015 * Math.sin(angle * 17);
 
-  const x = Math.cos(angle) * 42 * variation;
-  const z = Math.sin(angle) * 34 * variation;
+  const x = Math.cos(angle) * 1000 * variation;
+  const z = Math.sin(angle) * 820 * variation;
 
   if (i === 0) islandShape.moveTo(x, z);
   else islandShape.lineTo(x, z);
 }
 
 const island = new THREE.Mesh(
-  new THREE.ShapeGeometry(islandShape),
+  new THREE.ShapeGeometry(islandShape, 2),
   new THREE.MeshStandardMaterial({
     color: 0x638f3d,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
+    roughness: 1
   })
 );
 
@@ -83,141 +85,145 @@ island.rotation.x = -Math.PI / 2;
 scene.add(island);
 
 // ==========================================
-// GRANDE PLAGE
+// PLAGE
 // ==========================================
 
 const beach = new THREE.Mesh(
-  new THREE.RingGeometry(36, 42, 100),
+  new THREE.RingGeometry(850, 1000, 160),
   new THREE.MeshStandardMaterial({
     color: 0xd9bd83,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
+    roughness: 1
   })
 );
 
-beach.scale.z = 0.81;
+beach.scale.y = 0.82;
 beach.rotation.x = -Math.PI / 2;
-beach.position.y = 0.03;
+beach.position.y = 0.04;
 scene.add(beach);
 
 // ==========================================
-// OUTILS DE CREATION DU DECOR
+// OUTILS ALEATOIRES
 // ==========================================
 
 const random = (min, max) =>
   min + Math.random() * (max - min);
 
-// Position aléatoire dans l'île
-function randomIslandPosition(minRadius = 0, maxRadius = 0.82) {
+function randomIslandPosition(minRadius = 0, maxRadius = 0.88) {
   const angle = Math.random() * Math.PI * 2;
-  const radius = Math.sqrt(random(minRadius * minRadius, maxRadius * maxRadius));
+  const radius = Math.sqrt(
+    random(minRadius * minRadius, maxRadius * maxRadius)
+  );
 
   return {
-    x: Math.cos(angle) * radius * 40,
-    z: Math.sin(angle) * radius * 32
+    x: Math.cos(angle) * radius * 930,
+    z: Math.sin(angle) * radius * 760
   };
 }
 
 // ==========================================
 // ARBRES TROPICAUX
+// InstancedMesh pour limiter les appels graphiques
 // ==========================================
 
-function createTree(x, z, scale = 1) {
-  const tree = new THREE.Group();
+const treeCount = 260;
 
-  const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.18, 0.32, 3, 7),
-    new THREE.MeshStandardMaterial({ color: 0x79502c })
-  );
+const trunkGeometry = new THREE.CylinderGeometry(3, 5, 35, 7);
+const leafGeometry = new THREE.SphereGeometry(22, 8, 7);
 
-  trunk.position.y = 1.5;
-  tree.add(trunk);
+const trunkMaterial = new THREE.MeshStandardMaterial({
+  color: 0x79502c
+});
 
-  const leafMaterial = new THREE.MeshStandardMaterial({
-    color: Math.random() > 0.5 ? 0x246b32 : 0x397c35
-  });
+const leafMaterial = new THREE.MeshStandardMaterial({
+  color: 0x286b32
+});
 
-  const leaves = new THREE.Mesh(
-    new THREE.SphereGeometry(1.7, 8, 7),
-    leafMaterial
-  );
+const trunks = new THREE.InstancedMesh(
+  trunkGeometry, trunkMaterial, treeCount
+);
 
-  leaves.position.y = 3.6;
-  tree.add(leaves);
+const leaves = new THREE.InstancedMesh(
+  leafGeometry, leafMaterial, treeCount
+);
 
-  const crown = new THREE.Mesh(
-    new THREE.SphereGeometry(1.1, 7, 6),
-    leafMaterial
-  );
+const dummy = new THREE.Object3D();
 
-  crown.position.set(0.65, 4.1, 0);
-  tree.add(crown);
+for (let i = 0; i < treeCount; i++) {
+  const p = randomIslandPosition(0.18, 0.86);
+  const scale = random(0.75, 1.4);
 
-  tree.position.set(x, 0, z);
-  tree.scale.setScalar(scale);
+  dummy.position.set(p.x, 18 * scale, p.z);
+  dummy.rotation.y = random(0, Math.PI * 2);
+  dummy.scale.setScalar(scale);
+  dummy.updateMatrix();
+  trunks.setMatrixAt(i, dummy.matrix);
 
-  scene.add(tree);
+  dummy.position.set(p.x, 48 * scale, p.z);
+  dummy.scale.setScalar(scale);
+  dummy.updateMatrix();
+  leaves.setMatrixAt(i, dummy.matrix);
 }
 
-// 110 arbres
-for (let i = 0; i < 110; i++) {
-  const p = randomIslandPosition(0.20, 0.78);
-
-  if (Math.hypot(p.x, p.z) < 9) continue;
-
-  createTree(
-    p.x,
-    p.z,
-    random(0.75, 1.35)
-  );
-}
+scene.add(trunks);
+scene.add(leaves);
 
 // ==========================================
 // BUISSONS
 // ==========================================
 
+const bushCount = 140;
+
+const bushGeometry = new THREE.DodecahedronGeometry(10, 0);
 const bushMaterial = new THREE.MeshStandardMaterial({
   color: 0x326b2d
 });
 
-for (let i = 0; i < 65; i++) {
-  const p = randomIslandPosition(0.12, 0.78);
+const bushes = new THREE.InstancedMesh(
+  bushGeometry, bushMaterial, bushCount
+);
 
-  if (Math.hypot(p.x, p.z) < 5) continue;
+for (let i = 0; i < bushCount; i++) {
+  const p = randomIslandPosition(0.12, 0.88);
+  const size = random(0.7, 1.8);
 
-  const bush = new THREE.Mesh(
-    new THREE.DodecahedronGeometry(random(0.4, 0.9), 0),
-    bushMaterial
-  );
-
-  bush.position.set(p.x, 0.45, p.z);
-  bush.scale.y = 0.8;
-  scene.add(bush);
+  dummy.position.set(p.x, 7, p.z);
+  dummy.rotation.set(random(0, 1), random(0, 6), random(0, 1));
+  dummy.scale.set(size, size * 0.7, size);
+  dummy.updateMatrix();
+  bushes.setMatrixAt(i, dummy.matrix);
 }
+
+scene.add(bushes);
 
 // ==========================================
 // ROCHERS
 // ==========================================
 
-for (let i = 0; i < 45; i++) {
-  const p = randomIslandPosition(0.15, 0.85);
+const rockCount = 100;
 
-  const rock = new THREE.Mesh(
-    new THREE.DodecahedronGeometry(random(0.5, 1.5), 0),
-    new THREE.MeshStandardMaterial({
-      color: 0x777777,
-      roughness: 1
-    })
-  );
+const rockGeometry = new THREE.DodecahedronGeometry(13, 0);
+const rockMaterial = new THREE.MeshStandardMaterial({
+  color: 0x777777,
+  roughness: 1
+});
 
-  rock.position.set(p.x, 0.4, p.z);
-  rock.rotation.set(
-    Math.random(),
-    Math.random(),
-    Math.random()
-  );
+const rocks = new THREE.InstancedMesh(
+  rockGeometry, rockMaterial, rockCount
+);
 
-  scene.add(rock);
+for (let i = 0; i < rockCount; i++) {
+  const p = randomIslandPosition(0.15, 0.9);
+  const size = random(0.6, 2);
+
+  dummy.position.set(p.x, 8, p.z);
+  dummy.rotation.set(random(0, 2), random(0, 6), random(0, 2));
+  dummy.scale.set(size, size * 0.7, size);
+  dummy.updateMatrix();
+  rocks.setMatrixAt(i, dummy.matrix);
 }
+
+scene.add(rocks);
 
 // ==========================================
 // COLLINES
@@ -229,22 +235,24 @@ const hillMaterial = new THREE.MeshStandardMaterial({
 });
 
 const hillPositions = [
-  [-24, -12, 5, 3, 7],
-  [25, -17, 7, 4, 8],
-  [-22, 20, 6, 3, 7],
-  [24, 18, 8, 4, 6],
-  [5, -25, 9, 5, 8]
+  [-550, -250, 130, 65, 150],
+  [520, -350, 170, 85, 190],
+  [-480, 420, 150, 75, 160],
+  [450, 390, 190, 90, 145],
+  [100, -620, 210, 100, 170],
+  [-180, 610, 180, 90, 160],
+  [680, 80, 120, 65, 130],
+  [-700, -60, 140, 70, 150]
 ];
 
 for (const [x, z, sx, sy, sz] of hillPositions) {
   const hill = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 12, 9),
+    new THREE.SphereGeometry(1, 16, 12),
     hillMaterial
   );
 
   hill.position.set(x, sy * 0.45, z);
   hill.scale.set(sx, sy, sz);
-
   scene.add(hill);
 }
 
@@ -255,7 +263,6 @@ for (const [x, z, sx, sy, sz] of hillPositions) {
 const player = new THREE.Group();
 scene.add(player);
 
-// MATERIAUX
 const skin = new THREE.MeshStandardMaterial({ color: 0xb97850 });
 const shirt = new THREE.MeshStandardMaterial({ color: 0x455d45 });
 const pants = new THREE.MeshStandardMaterial({ color: 0x343b43 });
@@ -266,7 +273,7 @@ const eyeWhite = new THREE.MeshStandardMaterial({ color: 0xffffff });
 const eyeBlack = new THREE.MeshStandardMaterial({ color: 0x171717 });
 const mouthMaterial = new THREE.MeshStandardMaterial({ color: 0x542c25 });
 
-// TORSE
+// Torse
 const torso = new THREE.Mesh(
   new THREE.BoxGeometry(0.85, 0.95, 0.48),
   shirt
@@ -274,7 +281,7 @@ const torso = new THREE.Mesh(
 torso.position.y = 1.75;
 player.add(torso);
 
-// COU
+// Cou
 const neck = new THREE.Mesh(
   new THREE.CylinderGeometry(0.13, 0.15, 0.22, 12),
   skin
@@ -282,7 +289,7 @@ const neck = new THREE.Mesh(
 neck.position.y = 2.25;
 player.add(neck);
 
-// TETE
+// Tete
 const head = new THREE.Mesh(
   new THREE.SphereGeometry(0.28, 20, 16),
   skin
@@ -290,13 +297,12 @@ const head = new THREE.Mesh(
 head.position.y = 2.42;
 player.add(head);
 
-// YEUX, PUPILLES, SOURCILS ET OREILLES
+// Yeux, sourcils et oreilles
 for (const side of [-1, 1]) {
   const eye = new THREE.Mesh(
     new THREE.SphereGeometry(0.05, 12, 10),
     eyeWhite
   );
-
   eye.position.set(side * 0.09, 2.46, 0.255);
   player.add(eye);
 
@@ -304,7 +310,6 @@ for (const side of [-1, 1]) {
     new THREE.SphereGeometry(0.025, 12, 10),
     eyeBlack
   );
-
   pupil.position.set(side * 0.09, 2.46, 0.298);
   player.add(pupil);
 
@@ -312,7 +317,6 @@ for (const side of [-1, 1]) {
     new THREE.BoxGeometry(0.105, 0.025, 0.035),
     hair
   );
-
   eyebrow.position.set(side * 0.09, 2.535, 0.265);
   player.add(eyebrow);
 
@@ -320,12 +324,11 @@ for (const side of [-1, 1]) {
     new THREE.SphereGeometry(0.075, 12, 10),
     skin
   );
-
   ear.position.set(side * 0.275, 2.42, 0);
   player.add(ear);
 }
 
-// NEZ
+// Nez
 const nose = new THREE.Mesh(
   new THREE.SphereGeometry(0.055, 12, 10),
   skin
@@ -333,7 +336,7 @@ const nose = new THREE.Mesh(
 nose.position.set(0, 2.385, 0.305);
 player.add(nose);
 
-// BOUCHE
+// Bouche
 const mouth = new THREE.Mesh(
   new THREE.BoxGeometry(0.12, 0.025, 0.035),
   mouthMaterial
@@ -341,7 +344,7 @@ const mouth = new THREE.Mesh(
 mouth.position.set(0, 2.30, 0.275);
 player.add(mouth);
 
-// CHEVEUX
+// Cheveux
 const hairMesh = new THREE.Mesh(
   new THREE.SphereGeometry(
     0.29, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.55
@@ -351,7 +354,7 @@ const hairMesh = new THREE.Mesh(
 hairMesh.position.y = 2.48;
 player.add(hairMesh);
 
-// SAC A DOS
+// Sac à dos
 const backpack = new THREE.Mesh(
   new THREE.BoxGeometry(0.62, 0.75, 0.3),
   backpackMaterial
@@ -359,70 +362,65 @@ const backpack = new THREE.Mesh(
 backpack.position.set(0, 1.85, -0.36);
 player.add(backpack);
 
-// BRETELLES
+// Bretelles
 for (const side of [-1, 1]) {
   const strap = new THREE.Mesh(
     new THREE.BoxGeometry(0.12, 0.8, 0.08),
     backpackMaterial
   );
-
   strap.position.set(side * 0.27, 1.85, -0.12);
   strap.rotation.z = side * -0.12;
   player.add(strap);
 }
 
-// BRAS
+// Bras
 const arms = [];
 
 for (const side of [-1, 1]) {
-  const armPivot = new THREE.Group();
-  armPivot.position.set(side * 0.53, 2.08, 0);
-  player.add(armPivot);
+  const pivot = new THREE.Group();
+  pivot.position.set(side * 0.53, 2.08, 0);
+  player.add(pivot);
 
   const arm = new THREE.Mesh(
     new THREE.CapsuleGeometry(0.13, 0.48, 4, 8),
     shirt
   );
-
   arm.position.y = -0.3;
-  armPivot.add(arm);
+  pivot.add(arm);
 
   const hand = new THREE.Mesh(
     new THREE.SphereGeometry(0.13, 10, 8),
     skin
   );
-
   hand.position.y = -0.64;
-  armPivot.add(hand);
+  pivot.add(hand);
 
-  arms.push(armPivot);
+  arms.push(pivot);
 }
 
-// JAMBES
+// Jambes
 const legs = [];
 
 for (const side of [-1, 1]) {
-  const legPivot = new THREE.Group();
-  legPivot.position.set(side * 0.23, 1.3, 0);
-  player.add(legPivot);
+  const pivot = new THREE.Group();
+  pivot.position.set(side * 0.23, 1.3, 0);
+  player.add(pivot);
 
   const leg = new THREE.Mesh(
     new THREE.CapsuleGeometry(0.16, 0.48, 4, 8),
     pants
   );
-
   leg.position.y = -0.32;
-  legPivot.add(leg);
+  pivot.add(leg);
 
   const boot = new THREE.Mesh(
     new THREE.BoxGeometry(0.3, 0.2, 0.42),
     boots
   );
-
   boot.position.set(0, -0.68, 0.1);
-  legPivot.add(boot);
+  pivot.add(boot);
 
-  legs.push(legPivot);
+  legs.push(pivot);
 }
 
 // ==========================================
@@ -441,7 +439,7 @@ window.addEventListener("keyup", e => {
   keys[e.key.toLowerCase()] = false;
 });
 
-// COMMANDES TACTILES
+// Commandes tactiles
 const controls = document.createElement("div");
 
 controls.style.cssText = `
@@ -483,7 +481,9 @@ buttons.forEach(([symbol, key, row, col]) => {
   });
 
   ["pointerup", "pointerleave", "pointercancel"].forEach(event => {
-    button.addEventListener(event, () => keys[key] = false);
+    button.addEventListener(event, () => {
+      keys[key] = false;
+    });
   });
 
   controls.appendChild(button);
@@ -537,15 +537,15 @@ function animate() {
       dx /= length;
       dz /= length;
 
-      const nextX = player.position.x + dx * 0.10;
-      const nextZ = player.position.z + dz * 0.10;
+      const nextX = player.position.x + dx * 0.75;
+      const nextZ = player.position.z + dz * 0.75;
 
-      // LIMITES DE L'ILE XXL
+      // Limites de l'île
       const islandDistance =
-        (nextX * nextX) / (40 * 40) +
-        (nextZ * nextZ) / (32 * 32);
+        (nextX * nextX) / (950 * 950) +
+        (nextZ * nextZ) / (780 * 780);
 
-      if (islandDistance < 0.82) {
+      if (islandDistance < 0.96) {
         player.position.x = nextX;
         player.position.z = nextZ;
       }
