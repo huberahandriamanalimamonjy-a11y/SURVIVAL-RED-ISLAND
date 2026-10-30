@@ -1,12 +1,17 @@
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
+// ==================================
+// SURVIVAL: RED ISLAND
+// VERSION 2 - NOUVEAU PERSONNAGE
+// ==================================
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 35, 90);
+scene.fog = new THREE.Fog(0x87ceeb, 45, 120);
 
 const camera = new THREE.PerspectiveCamera(
-  65, window.innerWidth / window.innerHeight, 0.1, 150
+  65, window.innerWidth / window.innerHeight, 0.1, 200
 );
 
 const renderer = new THREE.WebGLRenderer({
@@ -18,6 +23,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 document.body.appendChild(renderer.domElement);
 
+// LUMIÈRE
 scene.add(new THREE.HemisphereLight(0xffffff, 0x426044, 2));
 
 const sunlight = new THREE.DirectionalLight(0xffffff, 2);
@@ -26,7 +32,7 @@ scene.add(sunlight);
 
 // OCÉAN
 const ocean = new THREE.Mesh(
-  new THREE.PlaneGeometry(150, 150),
+  new THREE.PlaneGeometry(200, 200),
   new THREE.MeshStandardMaterial({ color: 0x087eaa })
 );
 ocean.rotation.x = -Math.PI / 2;
@@ -38,8 +44,9 @@ const islandShape = new THREE.Shape();
 
 for (let i = 0; i <= 64; i++) {
   const angle = (i / 64) * Math.PI * 2;
-  const variation = 1 + 0.08 * Math.sin(angle * 5)
-                     + 0.05 * Math.cos(angle * 7);
+  const variation =
+    1 + 0.08 * Math.sin(angle * 5)
+      + 0.05 * Math.cos(angle * 7);
 
   const x = Math.cos(angle) * 19 * variation;
   const y = Math.sin(angle) * 16 * variation;
@@ -67,6 +74,7 @@ const beach = new THREE.Mesh(
     side: THREE.DoubleSide
   })
 );
+
 beach.rotation.x = -Math.PI / 2;
 beach.position.y = 0.03;
 scene.add(beach);
@@ -121,21 +129,126 @@ for (let i = 0; i < 15; i++) {
   scene.add(rock);
 }
 
-// PERSONNAGE
+// ==================================
+// NOUVEAU PERSONNAGE 3D
+// ==================================
+
 const player = new THREE.Group();
-
-const body = new THREE.Mesh(
-  new THREE.CapsuleGeometry(0.45, 1, 4, 8),
-  new THREE.MeshStandardMaterial({ color: 0x9b3d25 })
-);
-
-body.position.y = 1;
-player.add(body);
 scene.add(player);
 
+// MATÉRIAUX
+const skin = new THREE.MeshStandardMaterial({ color: 0xb97850 });
+const shirt = new THREE.MeshStandardMaterial({ color: 0x455d45 });
+const pants = new THREE.MeshStandardMaterial({ color: 0x343b43 });
+const boots = new THREE.MeshStandardMaterial({ color: 0x29231e });
+const backpackMaterial = new THREE.MeshStandardMaterial({ color: 0x75502e });
+const hair = new THREE.MeshStandardMaterial({ color: 0x211a15 });
+
+// TORSE
+const torso = new THREE.Mesh(
+  new THREE.BoxGeometry(0.85, 0.95, 0.48),
+  shirt
+);
+torso.position.y = 1.75;
+player.add(torso);
+
+// TÊTE
+const head = new THREE.Mesh(
+  new THREE.SphereGeometry(0.28, 12, 10),
+  skin
+);
+head.position.y = 2.42;
+player.add(head);
+
+// CHEVEUX
+const hairMesh = new THREE.Mesh(
+  new THREE.SphereGeometry(0.29, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.55),
+  hair
+);
+hairMesh.position.y = 2.48;
+player.add(hairMesh);
+
+// SAC À DOS
+const backpack = new THREE.Mesh(
+  new THREE.BoxGeometry(0.62, 0.75, 0.3),
+  backpackMaterial
+);
+backpack.position.set(0, 1.85, -0.36);
+player.add(backpack);
+
+// BRETELLES
+for (const side of [-1, 1]) {
+  const strap = new THREE.Mesh(
+    new THREE.BoxGeometry(0.12, 0.8, 0.08),
+    backpackMaterial
+  );
+
+  strap.position.set(side * 0.27, 1.85, -0.12);
+  strap.rotation.z = side * -0.12;
+  player.add(strap);
+}
+
+// BRAS ARTICULÉS
+const arms = [];
+
+for (const side of [-1, 1]) {
+  const armPivot = new THREE.Group();
+  armPivot.position.set(side * 0.53, 2.08, 0);
+  player.add(armPivot);
+
+  const arm = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.13, 0.48, 4, 8),
+    shirt
+  );
+
+  arm.position.y = -0.3;
+  armPivot.add(arm);
+
+  const hand = new THREE.Mesh(
+    new THREE.SphereGeometry(0.13, 8, 8),
+    skin
+  );
+
+  hand.position.y = -0.64;
+  armPivot.add(hand);
+
+  arms.push(armPivot);
+}
+
+// JAMBES ARTICULÉES
+const legs = [];
+
+for (const side of [-1, 1]) {
+  const legPivot = new THREE.Group();
+  legPivot.position.set(side * 0.23, 1.3, 0);
+  player.add(legPivot);
+
+  const leg = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.16, 0.48, 4, 8),
+    pants
+  );
+
+  leg.position.y = -0.32;
+  legPivot.add(leg);
+
+  const boot = new THREE.Mesh(
+    new THREE.BoxGeometry(0.3, 0.2, 0.42),
+    boots
+  );
+
+  boot.position.set(0, -0.68, 0.1);
+  legPivot.add(boot);
+
+  legs.push(legPivot);
+}
+
+// ==================================
 // COMMANDES
+// ==================================
+
 const keys = {};
 let gameStarted = false;
+let walkingTime = 0;
 
 window.addEventListener("keydown", e => {
   keys[e.key.toLowerCase()] = true;
@@ -195,7 +308,7 @@ buttons.forEach(([symbol, key, row, col]) => {
 
 document.body.appendChild(controls);
 
-// INTERFACE DE SURVIE
+// INTERFACE
 const playButton = document.getElementById("playButton");
 const menu = document.getElementById("menu");
 const survivalUI = document.getElementById("survivalUI");
@@ -212,6 +325,7 @@ playButton.addEventListener("click", () => {
 // CAMÉRA
 camera.position.set(0, 7, 10);
 
+// ANIMATION
 function animate() {
   requestAnimationFrame(animate);
 
@@ -225,8 +339,9 @@ function animate() {
     if (keys["arrowright"] || keys["d"] || keys["right"]) dx += 1;
 
     const length = Math.hypot(dx, dz);
+    const moving = length > 0;
 
-    if (length > 0) {
+    if (moving) {
       dx /= length;
       dz /= length;
 
@@ -234,6 +349,17 @@ function animate() {
       player.position.z += dz * 0.10;
 
       player.rotation.y = Math.atan2(dx, dz);
+
+      walkingTime += 0.14;
+
+      legs[0].rotation.x = Math.sin(walkingTime) * 0.65;
+      legs[1].rotation.x = Math.sin(walkingTime + Math.PI) * 0.65;
+
+      arms[0].rotation.x = Math.sin(walkingTime + Math.PI) * 0.45;
+      arms[1].rotation.x = Math.sin(walkingTime) * 0.45;
+    } else {
+      legs.forEach(leg => leg.rotation.x *= 0.8);
+      arms.forEach(arm => arm.rotation.x *= 0.8);
     }
 
     const distance = Math.hypot(
@@ -256,7 +382,7 @@ function animate() {
 
     camera.lookAt(
       player.position.x,
-      player.position.y + 1,
+      player.position.y + 1.3,
       player.position.z
     );
   }
