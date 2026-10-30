@@ -10,6 +10,7 @@ body {
   font-family: Arial, sans-serif;
 }
 
+/* MENU PRINCIPAL */
 #menu {
   position: absolute;
   z-index: 5;
@@ -50,6 +51,41 @@ h1 {
 #status {
   color: #ddd;
   margin-top: 22px;
+}
+
+/* INTERFACE DE SURVIE */
+#survivalUI {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  display: none;
+  width: 190px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #777;
+  border-radius: 10px;
+}
+
+.stat {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.bar {
+  width: 100%;
+  height: 13px;
+  margin-top: 7px;
+  background: #444;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#healthFill {
+  width: 100%;
+  height: 100%;
+  background: #df3030;
+  transition: width .3s;
 }
 
 canvas {
