@@ -1,17 +1,17 @@
 
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-// ==================================
+// ==========================================
 // SURVIVAL: RED ISLAND
-// VERSION 3 - PERSONNAGE AMELIORE
-// ==================================
+// VERSION 4 - XXL OPEN WORLD
+// ==========================================
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 45, 120);
+scene.fog = new THREE.Fog(0x87ceeb, 65, 180);
 
 const camera = new THREE.PerspectiveCamera(
-  65, window.innerWidth / window.innerHeight, 0.1, 200
+  65, window.innerWidth / window.innerHeight, 0.1, 250
 );
 
 const renderer = new THREE.WebGLRenderer({
@@ -23,42 +23,58 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 document.body.appendChild(renderer.domElement);
 
+// ==========================================
 // LUMIERES
+// ==========================================
+
 scene.add(new THREE.HemisphereLight(0xffffff, 0x426044, 2));
 
 const sunlight = new THREE.DirectionalLight(0xffffff, 2);
-sunlight.position.set(15, 25, 10);
+sunlight.position.set(30, 50, 20);
 scene.add(sunlight);
 
-// OCEAN
+// ==========================================
+// OCEAN XXL
+// ==========================================
+
 const ocean = new THREE.Mesh(
-  new THREE.PlaneGeometry(200, 200),
-  new THREE.MeshStandardMaterial({ color: 0x087eaa })
+  new THREE.PlaneGeometry(300, 300),
+  new THREE.MeshStandardMaterial({
+    color: 0x087eaa,
+    roughness: 0.4
+  })
 );
+
 ocean.rotation.x = -Math.PI / 2;
 ocean.position.y = -0.5;
 scene.add(ocean);
 
-// ILE
+// ==========================================
+// ILE XXL
+// ==========================================
+
 const islandShape = new THREE.Shape();
 
-for (let i = 0; i <= 64; i++) {
-  const angle = (i / 64) * Math.PI * 2;
+for (let i = 0; i <= 100; i++) {
+  const angle = (i / 100) * Math.PI * 2;
+
   const variation =
-    1 + 0.08 * Math.sin(angle * 5)
-      + 0.05 * Math.cos(angle * 7);
+    1 +
+    0.08 * Math.sin(angle * 5) +
+    0.05 * Math.cos(angle * 9) +
+    0.025 * Math.sin(angle * 13);
 
-  const x = Math.cos(angle) * 19 * variation;
-  const y = Math.sin(angle) * 16 * variation;
+  const x = Math.cos(angle) * 42 * variation;
+  const z = Math.sin(angle) * 34 * variation;
 
-  if (i === 0) islandShape.moveTo(x, y);
-  else islandShape.lineTo(x, y);
+  if (i === 0) islandShape.moveTo(x, z);
+  else islandShape.lineTo(x, z);
 }
 
 const island = new THREE.Mesh(
   new THREE.ShapeGeometry(islandShape),
   new THREE.MeshStandardMaterial({
-    color: 0x75a64b,
+    color: 0x638f3d,
     side: THREE.DoubleSide
   })
 );
@@ -66,72 +82,175 @@ const island = new THREE.Mesh(
 island.rotation.x = -Math.PI / 2;
 scene.add(island);
 
-// PLAGE
+// ==========================================
+// GRANDE PLAGE
+// ==========================================
+
 const beach = new THREE.Mesh(
-  new THREE.RingGeometry(17, 19, 64),
+  new THREE.RingGeometry(36, 42, 100),
   new THREE.MeshStandardMaterial({
-    color: 0xd9c18a,
+    color: 0xd9bd83,
     side: THREE.DoubleSide
   })
 );
 
+beach.scale.z = 0.81;
 beach.rotation.x = -Math.PI / 2;
 beach.position.y = 0.03;
 scene.add(beach);
 
-// ARBRES
-function createTree(x, z) {
+// ==========================================
+// OUTILS DE CREATION DU DECOR
+// ==========================================
+
+const random = (min, max) =>
+  min + Math.random() * (max - min);
+
+// Position aléatoire dans l'île
+function randomIslandPosition(minRadius = 0, maxRadius = 0.82) {
+  const angle = Math.random() * Math.PI * 2;
+  const radius = Math.sqrt(random(minRadius * minRadius, maxRadius * maxRadius));
+
+  return {
+    x: Math.cos(angle) * radius * 40,
+    z: Math.sin(angle) * radius * 32
+  };
+}
+
+// ==========================================
+// ARBRES TROPICAUX
+// ==========================================
+
+function createTree(x, z, scale = 1) {
   const tree = new THREE.Group();
 
   const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.2, 0.3, 2, 7),
+    new THREE.CylinderGeometry(0.18, 0.32, 3, 7),
     new THREE.MeshStandardMaterial({ color: 0x79502c })
   );
 
-  trunk.position.y = 1;
+  trunk.position.y = 1.5;
   tree.add(trunk);
 
+  const leafMaterial = new THREE.MeshStandardMaterial({
+    color: Math.random() > 0.5 ? 0x246b32 : 0x397c35
+  });
+
   const leaves = new THREE.Mesh(
-    new THREE.SphereGeometry(1.3, 7, 6),
-    new THREE.MeshStandardMaterial({ color: 0x246b32 })
+    new THREE.SphereGeometry(1.7, 8, 7),
+    leafMaterial
   );
 
-  leaves.position.y = 2.4;
+  leaves.position.y = 3.6;
   tree.add(leaves);
 
+  const crown = new THREE.Mesh(
+    new THREE.SphereGeometry(1.1, 7, 6),
+    leafMaterial
+  );
+
+  crown.position.set(0.65, 4.1, 0);
+  tree.add(crown);
+
   tree.position.set(x, 0, z);
+  tree.scale.setScalar(scale);
+
   scene.add(tree);
 }
 
-for (let i = 0; i < 45; i++) {
-  const angle = Math.random() * Math.PI * 2;
-  const radius = 6 + Math.random() * 10;
+// 110 arbres
+for (let i = 0; i < 110; i++) {
+  const p = randomIslandPosition(0.20, 0.78);
+
+  if (Math.hypot(p.x, p.z) < 9) continue;
 
   createTree(
-    Math.cos(angle) * radius,
-    Math.sin(angle) * radius
+    p.x,
+    p.z,
+    random(0.75, 1.35)
   );
 }
 
-// ROCHERS
-for (let i = 0; i < 15; i++) {
-  const rock = new THREE.Mesh(
-    new THREE.DodecahedronGeometry(0.5 + Math.random()),
-    new THREE.MeshStandardMaterial({ color: 0x777777 })
+// ==========================================
+// BUISSONS
+// ==========================================
+
+const bushMaterial = new THREE.MeshStandardMaterial({
+  color: 0x326b2d
+});
+
+for (let i = 0; i < 65; i++) {
+  const p = randomIslandPosition(0.12, 0.78);
+
+  if (Math.hypot(p.x, p.z) < 5) continue;
+
+  const bush = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(random(0.4, 0.9), 0),
+    bushMaterial
   );
 
-  rock.position.set(
-    (Math.random() - 0.5) * 28,
-    0.3,
-    (Math.random() - 0.5) * 23
+  bush.position.set(p.x, 0.45, p.z);
+  bush.scale.y = 0.8;
+  scene.add(bush);
+}
+
+// ==========================================
+// ROCHERS
+// ==========================================
+
+for (let i = 0; i < 45; i++) {
+  const p = randomIslandPosition(0.15, 0.85);
+
+  const rock = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(random(0.5, 1.5), 0),
+    new THREE.MeshStandardMaterial({
+      color: 0x777777,
+      roughness: 1
+    })
+  );
+
+  rock.position.set(p.x, 0.4, p.z);
+  rock.rotation.set(
+    Math.random(),
+    Math.random(),
+    Math.random()
   );
 
   scene.add(rock);
 }
 
-// ==================================
+// ==========================================
+// COLLINES
+// ==========================================
+
+const hillMaterial = new THREE.MeshStandardMaterial({
+  color: 0x547f36,
+  roughness: 1
+});
+
+const hillPositions = [
+  [-24, -12, 5, 3, 7],
+  [25, -17, 7, 4, 8],
+  [-22, 20, 6, 3, 7],
+  [24, 18, 8, 4, 6],
+  [5, -25, 9, 5, 8]
+];
+
+for (const [x, z, sx, sy, sz] of hillPositions) {
+  const hill = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 12, 9),
+    hillMaterial
+  );
+
+  hill.position.set(x, sy * 0.45, z);
+  hill.scale.set(sx, sy, sz);
+
+  scene.add(hill);
+}
+
+// ==========================================
 // PERSONNAGE
-// ==================================
+// ==========================================
 
 const player = new THREE.Group();
 scene.add(player);
@@ -171,7 +290,7 @@ const head = new THREE.Mesh(
 head.position.y = 2.42;
 player.add(head);
 
-// VISAGE : YEUX ET PUPILLES
+// YEUX, PUPILLES, SOURCILS ET OREILLES
 for (const side of [-1, 1]) {
   const eye = new THREE.Mesh(
     new THREE.SphereGeometry(0.05, 12, 10),
@@ -189,17 +308,14 @@ for (const side of [-1, 1]) {
   pupil.position.set(side * 0.09, 2.46, 0.298);
   player.add(pupil);
 
-  // SOURCILS
   const eyebrow = new THREE.Mesh(
     new THREE.BoxGeometry(0.105, 0.025, 0.035),
     hair
   );
 
   eyebrow.position.set(side * 0.09, 2.535, 0.265);
-  eyebrow.rotation.z = side * -0.08;
   player.add(eyebrow);
 
-  // OREILLES
   const ear = new THREE.Mesh(
     new THREE.SphereGeometry(0.075, 12, 10),
     skin
@@ -214,7 +330,6 @@ const nose = new THREE.Mesh(
   new THREE.SphereGeometry(0.055, 12, 10),
   skin
 );
-
 nose.position.set(0, 2.385, 0.305);
 player.add(nose);
 
@@ -223,7 +338,6 @@ const mouth = new THREE.Mesh(
   new THREE.BoxGeometry(0.12, 0.025, 0.035),
   mouthMaterial
 );
-
 mouth.position.set(0, 2.30, 0.275);
 player.add(mouth);
 
@@ -234,7 +348,6 @@ const hairMesh = new THREE.Mesh(
   ),
   hair
 );
-
 hairMesh.position.y = 2.48;
 player.add(hairMesh);
 
@@ -243,7 +356,6 @@ const backpack = new THREE.Mesh(
   new THREE.BoxGeometry(0.62, 0.75, 0.3),
   backpackMaterial
 );
-
 backpack.position.set(0, 1.85, -0.36);
 player.add(backpack);
 
@@ -313,9 +425,9 @@ for (const side of [-1, 1]) {
   legs.push(legPivot);
 }
 
-// ==================================
+// ==========================================
 // COMMANDES
-// ==================================
+// ==========================================
 
 const keys = {};
 let gameStarted = false;
@@ -379,7 +491,10 @@ buttons.forEach(([symbol, key, row, col]) => {
 
 document.body.appendChild(controls);
 
-// INTERFACE
+// ==========================================
+// INTERFACE DE SURVIE
+// ==========================================
+
 const playButton = document.getElementById("playButton");
 const menu = document.getElementById("menu");
 const survivalUI = document.getElementById("survivalUI");
@@ -393,10 +508,16 @@ playButton.addEventListener("click", () => {
   healthFill.style.width = "100%";
 });
 
+// ==========================================
 // CAMERA
+// ==========================================
+
 camera.position.set(0, 7, 10);
 
-// ANIMATION
+// ==========================================
+// ANIMATION ET DEPLACEMENT
+// ==========================================
+
 function animate() {
   requestAnimationFrame(animate);
 
@@ -416,8 +537,18 @@ function animate() {
       dx /= length;
       dz /= length;
 
-      player.position.x += dx * 0.10;
-      player.position.z += dz * 0.10;
+      const nextX = player.position.x + dx * 0.10;
+      const nextZ = player.position.z + dz * 0.10;
+
+      // LIMITES DE L'ILE XXL
+      const islandDistance =
+        (nextX * nextX) / (40 * 40) +
+        (nextZ * nextZ) / (32 * 32);
+
+      if (islandDistance < 0.82) {
+        player.position.x = nextX;
+        player.position.z = nextZ;
+      }
 
       player.rotation.y = Math.atan2(dx, dz);
 
@@ -431,16 +562,6 @@ function animate() {
     } else {
       legs.forEach(leg => leg.rotation.x *= 0.8);
       arms.forEach(arm => arm.rotation.x *= 0.8);
-    }
-
-    const distance = Math.hypot(
-      player.position.x,
-      player.position.z
-    );
-
-    if (distance > 17) {
-      player.position.x *= 17 / distance;
-      player.position.z *= 17 / distance;
     }
 
     const targetCamera = new THREE.Vector3(
@@ -463,7 +584,10 @@ function animate() {
 
 animate();
 
+// ==========================================
 // ADAPTATION ECRAN
+// ==========================================
+
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
