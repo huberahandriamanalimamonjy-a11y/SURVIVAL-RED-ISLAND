@@ -1,3 +1,4 @@
+ 
 export const SURVIVAL_KITS = [
   {
     id: "explorateur",
