@@ -1,0 +1,67 @@
+#kitMenu {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  overflow-y: auto;
+  background: linear-gradient(135deg, #101c17, #263d2d);
+  color: white;
+  padding: 25px 15px;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+#kitMenu h2 {
+  color: #d6b56d;
+  font-size: 28px;
+}
+
+.kit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 650px;
+  margin: 25px auto;
+}
+
+.kit-card {
+  background: #263b30;
+  border: 2px solid #526b55;
+  border-radius: 14px;
+  padding: 16px 10px;
+}
+
+.kit-card.selected {
+  border-color: #e4c36e;
+  background: #3b503b;
+}
+
+.kit-card h3 {
+  color: #e4c36e;
+}
+
+.kit-card p {
+  font-size: 13px;
+}
+
+.kit-card button,
+#confirmKit {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 15px;
+  background: #c49a43;
+  color: #172018;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#confirmKit {
+  font-size: 16px;
+  margin: 10px;
+}
+
+@media (max-width: 420px) {
+  .kit-grid {
+    grid-template-columns: 1fr;
+  }
+}
