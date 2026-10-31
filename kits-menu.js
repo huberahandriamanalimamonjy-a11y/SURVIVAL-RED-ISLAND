@@ -14,9 +14,8 @@ menu.innerHTML = `
 
 document.body.appendChild(menu);
 
-let selectedKit = SURVIVAL_KITS[0];
-
 const grid = document.getElementById("kitGrid");
+let selectedKit = SURVIVAL_KITS[0];
 
 SURVIVAL_KITS.forEach((kit, index) => {
   const card = document.createElement("div");
@@ -27,21 +26,33 @@ SURVIVAL_KITS.forEach((kit, index) => {
   card.innerHTML = `
     <h3>${kit.name}</h3>
     <p>${kit.items.join(" • ")}</p>
-    <p><strong>Bonus :</strong> ${kit.bonus}</p>
+    <p>Bonus : ${kit.bonus}</p>
     <button type="button">CHOISIR</button>
   `;
 
   card.querySelector("button").addEventListener("click", () => {
     selectedKit = kit;
 
-    document.querySelectorAll(".kit-card").forEach(item => {
-      item.classList.remove("selected");
+    document.querySelectorAll(".kit-card").forEach(c => {
+      c.classList.remove("selected");
     });
 
     card.classList.add("selected");
   });
 
   grid.appendChild(card);
+});
+
+const openButton = document.getElementById("chooseKitButton");
+
+if (openButton) {
+  openButton.addEventListener("click", () => {
+    menu.style.display = "block";
+  });
+}
+
+document.getElementById("closeKit").addEventListener("click", () => {
+  menu.style.display = "none";
 });
 
 document.getElementById("confirmKit").addEventListener("click", () => {
@@ -53,11 +64,3 @@ document.getElementById("confirmKit").addEventListener("click", () => {
     status.textContent = "Kit sélectionné : " + selectedKit.name;
   }
 });
-
-document.getElementById("closeKit").addEventListener("click", () => {
-  menu.style.display = "none";
-});
-
-window.openKitMenu = () => {
-  menu.style.display = "block";
-};
