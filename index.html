@@ -1,11 +1,14 @@
-                
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>SURVIVAL: RED ISLAND</title>
+
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="kits.css">
 </head>
 
 <body>
@@ -22,12 +25,28 @@
 
   <!-- MENU PRINCIPAL -->
   <div id="menu">
+
     <h1>SURVIVAL: RED ISLAND</h1>
+
     <p>Survis. Explore. Découvre Madagascar.</p>
-    <button id="playButton">JOUER</button>
+
+    <button id="chooseKitButton"
+      onclick="window.openKitMenu()">
+      CHOISIR MON KIT
+    </button>
+
+    <button id="playButton">
+      JOUER
+    </button>
+
     <p id="status">Prêt pour l'aventure ?</p>
+
   </div>
 
+  <!-- SYSTEME DES KITS -->
+  <script type="module" src="kits-menu.js"></script>
+
+  <!-- MOTEUR DU JEU -->
   <script type="module" src="game.js"></script>
 
 </body>
