@@ -1,0 +1,26 @@
+export const SURVIVAL_KITS = [
+  {
+    id: "explorateur",
+    name: "Explorateur",
+    items: ["Sac à dos", "Carte", "Boussole"],
+    bonus: "Exploration"
+  },
+  {
+    id: "survivant",
+    name: "Survivant",
+    items: ["Gourde", "Provisions", "Couverture"],
+    bonus: "Réserves de départ"
+  },
+  {
+    id: "medecin",
+    name: "Médecin",
+    items: ["Trousse de secours", "Bandages", "Désinfectant"],
+    bonus: "Soins de départ"
+  },
+  {
+    id: "technicien",
+    name: "Technicien",
+    items: ["Boîte à outils", "Marteau", "Ruban adhésif"],
+    bonus: "Réparations"
+  }
+];
